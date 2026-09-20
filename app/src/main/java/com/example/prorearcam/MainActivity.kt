@@ -9,11 +9,11 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.View
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TableLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.AspectRatio
@@ -38,9 +38,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var zoomSlider: SeekBar
     private lateinit var evSlider: SeekBar
     private lateinit var gridOverlay: TableLayout
-    private lateinit var btnFlash: Button
-    private lateinit var btnGrid: Button
-    private lateinit var btnAspectRatio: Button
+    
+    // Top Bar TextView Pills
+    private lateinit var btnFlash: TextView
+    private lateinit var btnGrid: TextView
+    private lateinit var btnAspectRatio: TextView
+    private lateinit var aboutButton: TextView
 
     private var imageCapture: ImageCapture? = null
     private var camera: Camera? = null
@@ -52,26 +55,34 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // UI Components Binding
         viewFinder = findViewById(R.id.viewFinder)
         imgPreview = findViewById(R.id.imgPreview)
         btnCapture = findViewById(R.id.btnCapture)
         zoomSlider = findViewById(R.id.zoomSlider)
         evSlider = findViewById(R.id.evSlider)
         gridOverlay = findViewById(R.id.gridOverlay)
+
+        // Top Bar TextView Binding
         btnFlash = findViewById(R.id.btnFlash)
         btnGrid = findViewById(R.id.btnGrid)
         btnAspectRatio = findViewById(R.id.btnAspectRatio)
-        val aboutButton: Button = findViewById(R.id.aboutButton)
+        aboutButton = findViewById(R.id.aboutButton)
 
+        // Navigation
         aboutButton.setOnClickListener {
             startActivity(Intent(this, AboutActivity::class.java))
         }
 
-        btnCapture.setOnClickListener { takePhoto() }
+        // Shutter Button
+        btnCapture.setOnClickListener { 
+            takePhoto() 
+        }
 
-        // Pro Controls Listeners
+        // Setup Pro Camera Controls
         setupProControls()
 
+        // Camera Permission Check
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -82,26 +93,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupProControls() {
-        // Flash Mode Switcher (Off -> Auto -> On)
+        // Flash Mode Switcher (OFF -> AUTO -> ON)
         btnFlash.setOnClickListener {
             flashMode = when (flashMode) {
                 ImageCapture.FLASH_MODE_OFF -> {
-                    btnFlash.text = "FLASH: AUTO"
+                    btnFlash.text = "⚡ AUTO"
                     ImageCapture.FLASH_MODE_AUTO
                 }
                 ImageCapture.FLASH_MODE_AUTO -> {
-                    btnFlash.text = "FLASH: ON"
+                    btnFlash.text = "⚡ ON"
                     ImageCapture.FLASH_MODE_ON
                 }
                 else -> {
-                    btnFlash.text = "FLASH: OFF"
+                    btnFlash.text = "⚡ OFF"
                     ImageCapture.FLASH_MODE_OFF
                 }
             }
             imageCapture?.flashMode = flashMode
         }
 
-        // Grid Toggle
+        // Grid Toggle (Show/Hide 3x3 Grid Overlay)
         btnGrid.setOnClickListener {
             gridOverlay.visibility = if (gridOverlay.visibility == View.VISIBLE) View.GONE else View.VISIBLE
         }
@@ -110,7 +121,7 @@ class MainActivity : AppCompatActivity() {
         btnAspectRatio.setOnClickListener {
             is169Ratio = !is169Ratio
             btnAspectRatio.text = if (is169Ratio) "16:9" else "4:3"
-            startCamera()
+            startCamera() // Restart camera with new aspect ratio
         }
 
         // Tap to Focus Implementation
@@ -161,7 +172,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupZoomAndEV() {
-        // Zoom Bar
+        // Zoom Slider Configuration
         zoomSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 camera?.cameraControl?.setLinearZoom(progress / 100f)
@@ -170,7 +181,7 @@ class MainActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        // Exposure Compensation (EV) Control
+        // Exposure Compensation (EV) Slider Configuration
         evSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 val evRange = camera?.cameraInfo?.exposureState?.exposureCompensationRange
@@ -206,8 +217,9 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    Toast.makeText(baseContext, "Photo Gallery me Save ho gayi!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(baseContext, "Photo saved to Gallery!", Toast.LENGTH_SHORT).show()
                     
+                    // Update Circular Preview Thumbnail
                     outputFileResults.savedUri?.let { uri ->
                         contentResolver.openInputStream(uri)?.use { stream ->
                             val bitmap = BitmapFactory.decodeStream(stream)
@@ -217,7 +229,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onError(exception: ImageCaptureException) {
-                    Toast.makeText(baseContext, "Failed: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(baseContext, "Capture failed: ${exception.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         )
@@ -237,7 +249,7 @@ class MainActivity : AppCompatActivity() {
             if (allPermissionsGranted()) {
                 startCamera()
             } else {
-                Toast.makeText(this, "Camera permission zaruri hai", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Camera permission required", Toast.LENGTH_SHORT).show()
             }
         }
     }
