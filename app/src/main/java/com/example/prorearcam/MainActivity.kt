@@ -208,19 +208,31 @@ class MainActivity : AppCompatActivity() {
                 val targetRatio = if (is169Ratio) AspectRatio.RATIO_16_9 else AspectRatio.RATIO_4_3
 
                 val previewBuilder = Preview.Builder().setTargetAspectRatio(targetRatio)
-                
-                // Hardware Macro Level Override using Camera2Interop
+
+                var cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
                 if (isMacroLens) {
-                    val camera2Extender = Camera2Interop.Extender(previewBuilder)
-                    // Disable AF auto focus lock and set lens distance to minimum focal point
-                    camera2Extender.setCaptureRequestOption(
-                        CaptureRequest.CONTROL_AF_MODE, 
-                        CaptureRequest.CONTROL_AF_MODE_OFF
-                    )
-                    camera2Extender.setCaptureRequestOption(
-                        CaptureRequest.LENS_FOCUS_DISTANCE, 
-                        10.0f
-                    )
+                    val secondaryCameraId = getPhysicalMacroCameraId()
+                    if (secondaryCameraId != null) {
+                        cameraSelector = CameraSelector.Builder()
+                            .addCameraFilter { cameraInfos ->
+                                cameraInfos.filter { info ->
+                                    val id = (info as? androidx.camera.camera2.interop.Camera2CameraInfo)?.cameraId
+                                    id == secondaryCameraId
+                                }
+                            }.build()
+
+                        // Manual focus lock for close-up physical Macro range
+                        val camera2Extender = Camera2Interop.Extender(previewBuilder)
+                        camera2Extender.setCaptureRequestOption(
+                            CaptureRequest.CONTROL_AF_MODE,
+                            CaptureRequest.CONTROL_AF_MODE_OFF
+                        )
+                        camera2Extender.setCaptureRequestOption(
+                            CaptureRequest.LENS_FOCUS_DISTANCE,
+                            10.0f
+                        )
+                    }
                 }
 
                 val preview = previewBuilder.build().also {
@@ -233,32 +245,17 @@ class MainActivity : AppCompatActivity() {
                     .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                     .build()
 
-                var cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-                if (isMacroLens) {
-                    val physicalMacroId = getSecondaryPhysicalCameraId()
-                    if (physicalMacroId != null) {
-                        cameraSelector = CameraSelector.Builder()
-                            .addCameraFilter { cameraInfos ->
-                                cameraInfos.filter { info ->
-                                    val id = (info as? androidx.camera.camera2.interop.Camera2CameraInfo)?.cameraId
-                                    id == physicalMacroId
-                                }
-                            }.build()
-                    }
-                }
-
                 cameraProvider.unbindAll()
                 camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture)
 
                 if (isMacroLens) {
-                    Toast.makeText(this, "Macro Lens Active", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Physical Macro Lens Active", Toast.LENGTH_SHORT).show()
                 }
 
                 setupZoomAndEV()
 
             } catch (exc: Exception) {
-                // Smooth fallback if physical macro fails
+                // System restriction fallback
                 try {
                     val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
                     val targetRatio = if (is169Ratio) AspectRatio.RATIO_16_9 else AspectRatio.RATIO_4_3
@@ -267,7 +264,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     cameraProvider.unbindAll()
                     camera = cameraProvider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageCapture)
-                    
+
                     camera?.cameraControl?.setLinearZoom(0.35f)
                     Toast.makeText(this, "Macro Software Zoom Active", Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
@@ -277,7 +274,8 @@ class MainActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun getSecondaryPhysicalCameraId(): String? {
+    // Direct hardware scanner for physical secondary lenses
+    private fun getPhysicalMacroCameraId(): String? {
         val manager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
         return try {
             val cameraIds = manager.cameraIdList
@@ -291,9 +289,9 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            // Return second or third physical back camera ID
+            // Picks the second physical back lens ID directly
             if (backCameras.size > 1) {
-                backCameras[1] 
+                backCameras[1]
             } else {
                 null
             }
@@ -351,7 +349,7 @@ class MainActivity : AppCompatActivity() {
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                     Toast.makeText(baseContext, "Photo saved!", Toast.LENGTH_SHORT).show()
-                    
+
                     lastSavedUri = outputFileResults.savedUri
                     lastSavedUri?.let { uri ->
                         contentResolver.openInputStream(uri)?.use { stream ->
