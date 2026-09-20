@@ -1,11 +1,11 @@
 package com.example.prorearcam
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
@@ -26,14 +26,13 @@ class MainActivity : AppCompatActivity() {
         viewFinder = findViewById(R.id.viewFinder)
         val aboutButton: Button = findViewById(R.id.aboutButton)
 
+        // AboutActivity ko open karega
         aboutButton.setOnClickListener {
-            AlertDialog.Builder(this)
-                .setTitle("Pro Rear Camera")
-                .setMessage("Yeh app Pro Rear Camera Viewfinder ke liye banaya gaya hai.")
-                .setPositiveButton("OK", null)
-                .show()
+            val intent = Intent(this, AboutActivity::class.java)
+            startActivity(intent)
         }
 
+        // Camera permission check
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -64,7 +63,7 @@ class MainActivity : AppCompatActivity() {
                 )
 
             } catch (exc: Exception) {
-                Toast.makeText(this, "Camera start nahi ho saka: ${exc.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Camera load nahi ho paya", Toast.LENGTH_SHORT).show()
             }
         }, ContextCompat.getMainExecutor(this))
     }
@@ -83,7 +82,7 @@ class MainActivity : AppCompatActivity() {
             if (allPermissionsGranted()) {
                 startCamera()
             } else {
-                Toast.makeText(this, "Camera permission zaruri hai!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Camera permission zaruri hai", Toast.LENGTH_SHORT).show()
             }
         }
     }
