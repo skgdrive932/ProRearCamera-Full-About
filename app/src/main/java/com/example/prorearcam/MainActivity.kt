@@ -1,4 +1,4 @@
-package com.example.nofrontcamera
+package com.example.prorearcam
 
 import android.Manifest
 import android.content.ContentValues
@@ -10,9 +10,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.video.Recorder
+import androidx.camera.video.VideoCapture
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.nofrontcamera.databinding.ActivityMainBinding
+// ViewBinding fix (Iske liye gradle build process complete hona chahiye)
+import com.example.prorearcam.databinding.ActivityMainBinding
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
@@ -20,9 +23,11 @@ import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
 
+    // ViewBinding instantiation fix
     private lateinit var binding: ActivityMainBinding
     private var imageCapture: ImageCapture? = null
-    private var videoCapture: VideoCapture<androidx.camera.video.Recorder>? = null
+    // VideoCapture correct generic type fix
+    private var videoCapture: VideoCapture<Recorder>? = null
     private lateinit var cameraExecutor: ExecutorService
     private var camera: Camera? = null
     private var isFlashOn = false
@@ -30,6 +35,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // ViewBinding correct usage
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -46,10 +52,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
+        // XML View reference fix using Binding
         binding.btnCapture.setOnClickListener { takePhoto() }
         binding.btnFlash.setOnClickListener { toggleFlash() }
 
-        // Zoom level buttons
         binding.zoom1x.setOnClickListener { setZoom(1.0f) }
         binding.zoom2x.setOnClickListener { setZoom(2.0f) }
         binding.zoom06x.setOnClickListener { setZoom(0.6f) }
@@ -67,7 +73,7 @@ class MainActivity : AppCompatActivity() {
 
             imageCapture = ImageCapture.Builder().build()
 
-            // STRICTLY REAR CAMERA (No Front Camera option)
+            // STRICT REAR CAMERA ONLY SELECTOR
             val cameraSelector = CameraSelector.Builder()
                 .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                 .build()
@@ -78,7 +84,8 @@ class MainActivity : AppCompatActivity() {
                     this, cameraSelector, preview, imageCapture
                 )
             } catch (exc: Exception) {
-                Toast.makeText(this, "Camera start failed: ${exc.message}", Toast.LENGTH_SHORT).show()
+                // Sahi toast syntax
+                Toast.makeText(this, "Camera initialization failed: ${exc.message}", Toast.LENGTH_SHORT).show()
             }
 
         }, ContextCompat.getMainExecutor(this))
@@ -86,8 +93,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun setZoom(ratio: Float) {
         currentZoomRatio = ratio
+        // Direct control of rear camera lens
         camera?.cameraControl?.setZoomRatio(ratio)
-        Toast.instance(this, "Zoom: ${ratio}x", Toast.LENGTH_SHORT).show()
+        // Toast syntax fix
+        Toast.makeText(this, "Zoom set to ${ratio}x", Toast.LENGTH_SHORT).show()
     }
 
     private fun takePhoto() {
@@ -99,7 +108,7 @@ class MainActivity : AppCompatActivity() {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/GoogleCameraClone")
+                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/ProRearCam-Images")
             }
         }
 
@@ -118,7 +127,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    Toast.makeText(baseContext, "Photo saved successfully!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(baseContext, "Photo saved to gallery!", Toast.LENGTH_SHORT).show()
                 }
             }
         )
@@ -129,6 +138,8 @@ class MainActivity : AppCompatActivity() {
             if (cam.cameraInfo.hasFlashUnit()) {
                 isFlashOn = !isFlashOn
                 cam.cameraControl.enableTorch(isFlashOn)
+            } else {
+                Toast.makeText(this, "Flash unit not available on rear camera", Toast.LENGTH_SHORT).show()
             }
         }
     }
