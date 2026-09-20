@@ -8,14 +8,18 @@ import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.SeekBar
+import android.widget.TableLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
@@ -32,9 +36,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var imgPreview: ImageView
     private lateinit var btnCapture: ImageButton
     private lateinit var zoomSlider: SeekBar
+    private lateinit var evSlider: SeekBar
+    private lateinit var gridOverlay: TableLayout
+    private lateinit var btnFlash: Button
+    private lateinit var btnGrid: Button
+    private lateinit var btnAspectRatio: Button
 
     private var imageCapture: ImageCapture? = null
     private var camera: Camera? = null
+    private var flashMode = ImageCapture.FLASH_MODE_OFF
+    private var is169Ratio = false
     private val CAMERA_PERMISSION_CODE = 101
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,16 +56,21 @@ class MainActivity : AppCompatActivity() {
         imgPreview = findViewById(R.id.imgPreview)
         btnCapture = findViewById(R.id.btnCapture)
         zoomSlider = findViewById(R.id.zoomSlider)
+        evSlider = findViewById(R.id.evSlider)
+        gridOverlay = findViewById(R.id.gridOverlay)
+        btnFlash = findViewById(R.id.btnFlash)
+        btnGrid = findViewById(R.id.btnGrid)
+        btnAspectRatio = findViewById(R.id.btnAspectRatio)
         val aboutButton: Button = findViewById(R.id.aboutButton)
 
         aboutButton.setOnClickListener {
-            val intent = Intent(this, AboutActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, AboutActivity::class.java))
         }
 
-        btnCapture.setOnClickListener {
-            takePhoto()
-        }
+        btnCapture.setOnClickListener { takePhoto() }
+
+        // Pro Controls Listeners
+        setupProControls()
 
         if (allPermissionsGranted()) {
             startCamera()
@@ -65,6 +81,48 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupProControls() {
+        // Flash Mode Switcher (Off -> Auto -> On)
+        btnFlash.setOnClickListener {
+            flashMode = when (flashMode) {
+                ImageCapture.FLASH_MODE_OFF -> {
+                    btnFlash.text = "FLASH: AUTO"
+                    ImageCapture.FLASH_MODE_AUTO
+                }
+                ImageCapture.FLASH_MODE_AUTO -> {
+                    btnFlash.text = "FLASH: ON"
+                    ImageCapture.FLASH_MODE_ON
+                }
+                else -> {
+                    btnFlash.text = "FLASH: OFF"
+                    ImageCapture.FLASH_MODE_OFF
+                }
+            }
+            imageCapture?.flashMode = flashMode
+        }
+
+        // Grid Toggle
+        btnGrid.setOnClickListener {
+            gridOverlay.visibility = if (gridOverlay.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+        }
+
+        // Aspect Ratio Toggle (4:3 <-> 16:9)
+        btnAspectRatio.setOnClickListener {
+            is169Ratio = !is169Ratio
+            btnAspectRatio.text = if (is169Ratio) "16:9" else "4:3"
+            startCamera()
+        }
+
+        // Tap to Focus Implementation
+        viewFinder.setOnTouchListener { _, event ->
+            val factory = viewFinder.meteringPointFactory
+            val point = factory.createPoint(event.x, event.y)
+            val action = FocusMeteringAction.Builder(point).build()
+            camera?.cameraControl?.startFocusAndMetering(action)
+            true
+        }
+    }
+
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
@@ -72,11 +130,18 @@ class MainActivity : AppCompatActivity() {
             try {
                 val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-                val preview = Preview.Builder().build().also {
-                    it.setSurfaceProvider(viewFinder.surfaceProvider)
-                }
+                val targetRatio = if (is169Ratio) AspectRatio.RATIO_16_9 else AspectRatio.RATIO_4_3
+
+                val preview = Preview.Builder()
+                    .setTargetAspectRatio(targetRatio)
+                    .build()
+                    .also {
+                        it.setSurfaceProvider(viewFinder.surfaceProvider)
+                    }
 
                 imageCapture = ImageCapture.Builder()
+                    .setTargetAspectRatio(targetRatio)
+                    .setFlashMode(flashMode)
                     .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                     .build()
 
@@ -87,19 +152,31 @@ class MainActivity : AppCompatActivity() {
                     this, cameraSelector, preview, imageCapture
                 )
 
-                setupZoomControl()
+                setupZoomAndEV()
 
             } catch (exc: Exception) {
-                Toast.makeText(this, "Camera load nahi hua: ${exc.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Camera error: ${exc.message}", Toast.LENGTH_SHORT).show()
             }
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun setupZoomControl() {
+    private fun setupZoomAndEV() {
+        // Zoom Bar
         zoomSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                val linearZoom = progress / 100f
-                camera?.cameraControl?.setLinearZoom(linearZoom)
+                camera?.cameraControl?.setLinearZoom(progress / 100f)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        // Exposure Compensation (EV) Control
+        evSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val evRange = camera?.cameraInfo?.exposureState?.exposureCompensationRange
+                if (evRange != null && evRange.contains(progress - 10)) {
+                    camera?.cameraControl?.setExposureCompensationIndex(progress - 10)
+                }
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
@@ -111,7 +188,7 @@ class MainActivity : AppCompatActivity() {
 
         val name = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis())
         val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, "IMG_$name.jpg")
+            put(MediaStore.MediaColumns.DISPLAY_NAME, "PRO_IMG_$name.jpg")
             put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/ProRearCamera")
@@ -129,9 +206,8 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    Toast.makeText(baseContext, "Photo saved to Gallery!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(baseContext, "Photo Gallery me Save ho gayi!", Toast.LENGTH_SHORT).show()
                     
-                    // Update preview thumbnail
                     outputFileResults.savedUri?.let { uri ->
                         contentResolver.openInputStream(uri)?.use { stream ->
                             val bitmap = BitmapFactory.decodeStream(stream)
@@ -141,7 +217,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onError(exception: ImageCaptureException) {
-                    Toast.makeText(baseContext, "Photo click fail: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(baseContext, "Failed: ${exception.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         )
