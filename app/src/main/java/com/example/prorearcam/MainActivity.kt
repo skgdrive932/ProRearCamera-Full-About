@@ -26,16 +26,14 @@ class MainActivity : AppCompatActivity() {
         viewFinder = findViewById(R.id.viewFinder)
         val aboutButton: Button = findViewById(R.id.aboutButton)
 
-        // About dialog
         aboutButton.setOnClickListener {
             AlertDialog.Builder(this)
                 .setTitle("Pro Rear Camera")
-                .setMessage("Yeh app Pro Rear Camera ke live preview ke liye banaya gaya hai.")
+                .setMessage("Yeh app Pro Rear Camera Viewfinder ke liye banaya gaya hai.")
                 .setPositiveButton("OK", null)
                 .show()
         }
 
-        // Camera Permission Check
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -58,7 +56,6 @@ class MainActivity : AppCompatActivity() {
                         it.setSurfaceProvider(viewFinder.surfaceProvider)
                     }
 
-                // Force Back Camera (Pro Rear Camera)
                 val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
                 cameraProvider.unbindAll()
@@ -67,7 +64,7 @@ class MainActivity : AppCompatActivity() {
                 )
 
             } catch (exc: Exception) {
-                Toast.makeText(this, "Camera start nahi ho paya: ${exc.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Camera start nahi ho saka: ${exc.message}", Toast.LENGTH_LONG).show()
             }
         }, ContextCompat.getMainExecutor(this))
     }
