@@ -18,7 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Grid Overlay (Pro Grid Lines) -->
+    <!-- Grid Overlay -->
     <TableLayout
         android:id="@+id/gridOverlay"
         android:layout_width="0dp"
@@ -29,85 +29,103 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
         <TableRow android:layout_weight="1">
-            <View android:layout_weight="1" android:background="#33FFFFFF" android:layout_margin="1dp"/>
-            <View android:layout_weight="1" android:background="#33FFFFFF" android:layout_margin="1dp"/>
-            <View android:layout_weight="1" android:background="#33FFFFFF" android:layout_margin="1dp"/>
+            <View android:layout_weight="1" android:background="#22FFFFFF" android:layout_margin="0.5dp"/>
+            <View android:layout_weight="1" android:background="#22FFFFFF" android:layout_margin="0.5dp"/>
+            <View android:layout_weight="1" android:background="#22FFFFFF" android:layout_margin="0.5dp"/>
         </TableRow>
         <TableRow android:layout_weight="1">
-            <View android:layout_weight="1" android:background="#33FFFFFF" android:layout_margin="1dp"/>
-            <View android:layout_weight="1" android:background="#33FFFFFF" android:layout_margin="1dp"/>
-            <View android:layout_weight="1" android:background="#33FFFFFF" android:layout_margin="1dp"/>
+            <View android:layout_weight="1" android:background="#22FFFFFF" android:layout_margin="0.5dp"/>
+            <View android:layout_weight="1" android:background="#22FFFFFF" android:layout_margin="0.5dp"/>
+            <View android:layout_weight="1" android:background="#22FFFFFF" android:layout_margin="0.5dp"/>
         </TableRow>
         <TableRow android:layout_weight="1">
-            <View android:layout_weight="1" android:background="#33FFFFFF" android:layout_margin="1dp"/>
-            <View android:layout_weight="1" android:background="#33FFFFFF" android:layout_margin="1dp"/>
-            <View android:layout_weight="1" android:background="#33FFFFFF" android:layout_margin="1dp"/>
+            <View android:layout_weight="1" android:background="#22FFFFFF" android:layout_margin="0.5dp"/>
+            <View android:layout_weight="1" android:background="#22FFFFFF" android:layout_margin="0.5dp"/>
+            <View android:layout_weight="1" android:background="#22FFFFFF" android:layout_margin="0.5dp"/>
         </TableRow>
     </TableLayout>
 
-    <!-- Top Pro Action Bar -->
+    <!-- Top Bar (Clean & Spaced Buttons) -->
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="#66000000"
+        android:layout_height="wrap_content"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:paddingHorizontal="16dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingHorizontal="16dp"
+        android:background="#40000000"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Flash Toggle -->
-        <Button
+        <TextView
             android:id="@+id/btnFlash"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="FLASH: OFF"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_pill"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
+            android:text="⚡ OFF"
             android:textColor="#FFFFFF"
-            android:textSize="12sp" />
+            android:textSize="11sp"
+            android:textStyle="bold" />
 
-        <!-- Grid Toggle -->
-        <Button
+        <TextView
             android:id="@+id/btnGrid"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_pill"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
             android:text="GRID"
             android:textColor="#FFFFFF"
-            android:textSize="12sp" />
+            android:textSize="11sp"
+            android:textStyle="bold" />
 
-        <!-- Aspect Ratio Switcher -->
-        <Button
+        <TextView
             android:id="@+id/btnAspectRatio"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_pill"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
             android:text="4:3"
             android:textColor="#FFFFFF"
-            android:textSize="12sp" />
+            android:textSize="11sp"
+            android:textStyle="bold" />
 
-        <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
-        <Button
+        <TextView
             android:id="@+id/aboutButton"
             android:layout_width="wrap_content"
             android:layout_height="32dp"
-            android:backgroundTint="#33FFFFFF"
-            android:text="ABOUT"
+            android:background="@drawable/bg_pill"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
+            android:text="ⓘ ABOUT"
             android:textColor="#FFFFFF"
-            android:textSize="10sp" />
+            android:textSize="11sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Pro Sliders Layout (Zoom & Exposure EV) -->
+    <!-- Pro Sliders Box (Floating Glassmorphism Card) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="12dp"
+        android:background="@drawable/bg_pill"
         android:orientation="vertical"
-        android:paddingHorizontal="24dp"
-        android:layout_marginBottom="8dp"
+        android:padding="12dp"
         app:layout_constraintBottom_toTopOf="@+id/bottomControlPanel">
 
-        <!-- Exposure (EV) Control -->
+        <!-- EV Slider -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -115,11 +133,11 @@
             android:orientation="horizontal">
 
             <TextView
-                android:layout_width="40dp"
+                android:layout_width="48dp"
                 android:layout_height="wrap_content"
                 android:text="EV"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp"
+                android:textColor="#FFD700"
+                android:textSize="11sp"
                 android:textStyle="bold" />
 
             <SeekBar
@@ -133,19 +151,20 @@
                 android:thumbTint="#FFD700" />
         </LinearLayout>
 
-        <!-- Zoom Control -->
+        <!-- Zoom Slider -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <TextView
-                android:layout_width="40dp"
+                android:layout_width="48dp"
                 android:layout_height="wrap_content"
                 android:text="ZOOM"
                 android:textColor="#FFFFFF"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold" />
 
             <SeekBar
@@ -163,30 +182,33 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/bottomControlPanel"
         android:layout_width="match_parent"
-        android:layout_height="120dp"
-        android:background="#CC000000"
+        android:layout_height="110dp"
+        android:background="#FF000000"
         app:layout_constraintBottom_toBottomOf="parent">
 
+        <!-- Circular Gallery Thumbnail Preview -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imgPreview"
-            android:layout_width="54dp"
-            android:layout_height="54dp"
-            android:layout_marginStart="32dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="36dp"
             android:background="#222222"
-            android:padding="2dp"
+            android:contentDescription="Gallery Preview"
             android:scaleType="centerCrop"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
             app:strokeColor="#FFFFFF"
-            app:strokeWidth="1dp" />
+            app:strokeWidth="2dp" />
 
+        <!-- Double Ring Shutter Button -->
         <ImageButton
             android:id="@+id/btnCapture"
             android:layout_width="72dp"
             android:layout_height="72dp"
             android:background="@drawable/bg_shutter"
-            android:contentDescription="Take Photo"
+            android:contentDescription="Capture"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
