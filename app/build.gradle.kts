@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.prorearcamera" // अपने ऐप का सही Package/Namespace नाम यहाँ लिखें
+    namespace = "com.example.prorearcam"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.prorearcamera"
+        applicationId = "com.example.prorearcam"
         minSdk = 21
         targetSdk = 34
         versionCode = 1
@@ -27,19 +27,20 @@ android {
         }
     }
 
-    // Java Compatibility Target को 17 पर सेट किया गया है
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    // Kotlin JVM Target को भी 17 पर सेट किया गया है (एरर फिक्स करने के लिए)
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     buildFeatures {
         viewBinding = true
+    }
+}
+
+// Java और Kotlin के 17 Target Compatibility के लिए सही और आधुनिक तरीका:
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 
