@@ -1,1 +1,19 @@
-a
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme -->
+    <style name="Theme.ProRearCamera" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color -->
+        <item name="colorPrimary">#000000</item>
+        <item name="colorPrimaryVariant">#000000</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">#3A0D05</item>
+        <item name="colorSecondaryVariant">#7A2D16</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        
+        <!-- Status bar and Navigation bar -->
+        <item name="android:statusBarColor">#000000</item>
+        <item name="android:navigationBarColor">#3A0D05</item>
+    </style>
+</resources>
