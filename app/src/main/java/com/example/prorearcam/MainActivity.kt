@@ -14,7 +14,6 @@ import androidx.camera.video.Recorder
 import androidx.camera.video.VideoCapture
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-// ViewBinding fix (Iske liye gradle build process complete hona chahiye)
 import com.example.prorearcam.databinding.ActivityMainBinding
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -23,10 +22,8 @@ import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
 
-    // ViewBinding instantiation fix
     private lateinit var binding: ActivityMainBinding
     private var imageCapture: ImageCapture? = null
-    // VideoCapture correct generic type fix
     private var videoCapture: VideoCapture<Recorder>? = null
     private lateinit var cameraExecutor: ExecutorService
     private var camera: Camera? = null
@@ -35,10 +32,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // ViewBinding correct usage
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Runtime permission check
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -52,7 +49,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-        // XML View reference fix using Binding
         binding.btnCapture.setOnClickListener { takePhoto() }
         binding.btnFlash.setOnClickListener { toggleFlash() }
 
@@ -73,7 +69,7 @@ class MainActivity : AppCompatActivity() {
 
             imageCapture = ImageCapture.Builder().build()
 
-            // STRICT REAR CAMERA ONLY SELECTOR
+            // Strictly selecting REAR CAMERA
             val cameraSelector = CameraSelector.Builder()
                 .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                 .build()
@@ -84,8 +80,7 @@ class MainActivity : AppCompatActivity() {
                     this, cameraSelector, preview, imageCapture
                 )
             } catch (exc: Exception) {
-                // Sahi toast syntax
-                Toast.makeText(this, "Camera initialization failed: ${exc.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Camera start nahi ho saka: ${exc.message}", Toast.LENGTH_SHORT).show()
             }
 
         }, ContextCompat.getMainExecutor(this))
@@ -93,10 +88,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun setZoom(ratio: Float) {
         currentZoomRatio = ratio
-        // Direct control of rear camera lens
         camera?.cameraControl?.setZoomRatio(ratio)
-        // Toast syntax fix
-        Toast.makeText(this, "Zoom set to ${ratio}x", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Zoom: ${ratio}x", Toast.LENGTH_SHORT).show()
     }
 
     private fun takePhoto() {
@@ -108,7 +101,7 @@ class MainActivity : AppCompatActivity() {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/ProRearCam-Images")
+                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/ProRearCam")
             }
         }
 
@@ -127,7 +120,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    Toast.makeText(baseContext, "Photo saved to gallery!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(baseContext, "Photo saved successfully!", Toast.LENGTH_SHORT).show()
                 }
             }
         )
@@ -139,13 +132,29 @@ class MainActivity : AppCompatActivity() {
                 isFlashOn = !isFlashOn
                 cam.cameraControl.enableTorch(isFlashOn)
             } else {
-                Toast.makeText(this, "Flash unit not available on rear camera", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Flash not available", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (allPermissionsGranted()) {
+                startCamera()
+            } else {
+                Toast.makeText(this, "Camera permission nahi mili!", Toast.LENGTH_LONG).show()
+                finish()
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -155,6 +164,9 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val REQUEST_CODE_PERMISSIONS = 10
-        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
+        private val REQUIRED_PERMISSIONS = arrayOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO
+        )
     }
 }
