@@ -13,72 +13,180 @@
         android:id="@+id/viewFinder"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/controlLayout"
+        app:layout_constraintBottom_toTopOf="@+id/bottomControlPanel"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Zoom Slider Container -->
-    <SeekBar
-        android:id="@+id/zoomSlider"
+    <!-- Grid Overlay (Pro Grid Lines) -->
+    <TableLayout
+        android:id="@+id/gridOverlay"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="32dp"
-        android:layout_marginBottom="16dp"
-        android:max="100"
-        app:layout_constraintBottom_toTopOf="@+id/controlLayout"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/bottomControlPanel"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <!-- Top Action Bar (Flash & About) -->
-    <ImageButton
-        android:id="@+id/btnFlash"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_margin="16dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Flash Toggle"
-        android:src="@android:drawable/ic_menu_compass"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+        <TableRow android:layout_weight="1">
+            <View android:layout_weight="1" android:background="#33FFFFFF" android:layout_margin="1dp"/>
+            <View android:layout_weight="1" android:background="#33FFFFFF" android:layout_margin="1dp"/>
+            <View android:layout_weight="1" android:background="#33FFFFFF" android:layout_margin="1dp"/>
+        </TableRow>
+        <TableRow android:layout_weight="1">
+            <View android:layout_weight="1" android:background="#33FFFFFF" android:layout_margin="1dp"/>
+            <View android:layout_weight="1" android:background="#33FFFFFF" android:layout_margin="1dp"/>
+            <View android:layout_weight="1" android:background="#33FFFFFF" android:layout_margin="1dp"/>
+        </TableRow>
+        <TableRow android:layout_weight="1">
+            <View android:layout_weight="1" android:background="#33FFFFFF" android:layout_margin="1dp"/>
+            <View android:layout_weight="1" android:background="#33FFFFFF" android:layout_margin="1dp"/>
+            <View android:layout_weight="1" android:background="#33FFFFFF" android:layout_margin="1dp"/>
+        </TableRow>
+    </TableLayout>
 
-    <Button
-        android:id="@+id/aboutButton"
-        android:layout_width="wrap_content"
+    <!-- Top Pro Action Bar -->
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="#66000000"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Flash Toggle -->
+        <Button
+            android:id="@+id/btnFlash"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="FLASH: OFF"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+
+        <!-- Grid Toggle -->
+        <Button
+            android:id="@+id/btnGrid"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GRID"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+
+        <!-- Aspect Ratio Switcher -->
+        <Button
+            android:id="@+id/btnAspectRatio"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="4:3"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+
+        <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/aboutButton"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:backgroundTint="#33FFFFFF"
+            android:text="ABOUT"
+            android:textColor="#FFFFFF"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <!-- Pro Sliders Layout (Zoom & Exposure EV) -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="About"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottomControlPanel">
 
-    <!-- Bottom Controls Layout -->
+        <!-- Exposure (EV) Control -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:text="EV"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <SeekBar
+                android:id="@+id/evSlider"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="20"
+                android:progress="10"
+                android:progressTint="#FFD700"
+                android:thumbTint="#FFD700" />
+        </LinearLayout>
+
+        <!-- Zoom Control -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:text="ZOOM"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <SeekBar
+                android:id="@+id/zoomSlider"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="100"
+                android:progressTint="#FFFFFF"
+                android:thumbTint="#FFFFFF" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Bottom Control Panel -->
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/controlLayout"
+        android:id="@+id/bottomControlPanel"
         android:layout_width="match_parent"
         android:layout_height="120dp"
-        android:background="#80000000"
+        android:background="#CC000000"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <!-- Captured Image Thumbnail -->
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imgPreview"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_marginStart="24dp"
-            android:background="#333333"
-            android:contentDescription="Captured Photo Preview"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_marginStart="32dp"
+            android:background="#222222"
+            android:padding="2dp"
             android:scaleType="centerCrop"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:strokeColor="#FFFFFF"
+            app:strokeWidth="1dp" />
 
-        <!-- Shutter / Capture Button -->
         <ImageButton
             android:id="@+id/btnCapture"
             android:layout_width="72dp"
             android:layout_height="72dp"
-            android:background="@android:drawable/btn_default_small"
-            android:contentDescription="Capture Photo"
+            android:background="@drawable/bg_shutter"
+            android:contentDescription="Take Photo"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
