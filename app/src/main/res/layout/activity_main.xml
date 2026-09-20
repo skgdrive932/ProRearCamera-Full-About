@@ -8,25 +8,82 @@
     android:background="#000000"
     tools:context=".MainActivity">
 
-    <!-- Camera PreviewView -->
+    <!-- Camera Preview -->
     <androidx.camera.view.PreviewView
         android:id="@+id/viewFinder"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/aboutButton"
+        app:layout_constraintBottom_toTopOf="@+id/controlLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- About Button -->
+    <!-- Zoom Slider Container -->
+    <SeekBar
+        android:id="@+id/zoomSlider"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginBottom="16dp"
+        android:max="100"
+        app:layout_constraintBottom_toTopOf="@+id/controlLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Top Action Bar (Flash & About) -->
+    <ImageButton
+        android:id="@+id/btnFlash"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_margin="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Flash Toggle"
+        android:src="@android:drawable/ic_menu_compass"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <Button
         android:id="@+id/aboutButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
+        android:layout_margin="16dp"
         android:text="About"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Bottom Controls Layout -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/controlLayout"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:background="#80000000"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- Captured Image Thumbnail -->
+        <ImageView
+            android:id="@+id/imgPreview"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="24dp"
+            android:background="#333333"
+            android:contentDescription="Captured Photo Preview"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Shutter / Capture Button -->
+        <ImageButton
+            android:id="@+id/btnCapture"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:background="@android:drawable/btn_default_small"
+            android:contentDescription="Capture Photo"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
