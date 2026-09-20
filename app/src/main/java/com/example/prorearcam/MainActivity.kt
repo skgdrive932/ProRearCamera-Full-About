@@ -1,6 +1,7 @@
 package com.example.prorearcam
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -8,6 +9,7 @@ import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CaptureRequest
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -21,6 +23,8 @@ import android.widget.TableLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.camera2.interop.Camera2Interop
+import androidx.camera.camera2.interop.ExperimentalCamera2Interop
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
@@ -36,6 +40,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.Executors
 
+@OptIn(ExperimentalCamera2Interop::class)
 class MainActivity : AppCompatActivity() {
 
     private lateinit var viewFinder: PreviewView
@@ -193,6 +198,7 @@ class MainActivity : AppCompatActivity() {
         modePro.setOnClickListener { selectMode(modePro) }
     }
 
+    @SuppressLint("UnsafeOptInUsageError")
     private fun startCamera(isMacroLens: Boolean = false) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
@@ -201,7 +207,23 @@ class MainActivity : AppCompatActivity() {
                 val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
                 val targetRatio = if (is169Ratio) AspectRatio.RATIO_16_9 else AspectRatio.RATIO_4_3
 
-                val preview = Preview.Builder().setTargetAspectRatio(targetRatio).build().also {
+                val previewBuilder = Preview.Builder().setTargetAspectRatio(targetRatio)
+                
+                // Hardware Macro Level Override using Camera2Interop
+                if (isMacroLens) {
+                    val camera2Extender = Camera2Interop.Extender(previewBuilder)
+                    // Disable AF auto focus lock and set lens distance to minimum focal point
+                    camera2Extender.setCaptureRequestOption(
+                        CaptureRequest.CONTROL_AF_MODE, 
+                        CaptureRequest.CONTROL_AF_MODE_OFF
+                    )
+                    camera2Extender.setCaptureRequestOption(
+                        CaptureRequest.LENS_FOCUS_DISTANCE, 
+                        10.0f
+                    )
+                }
+
+                val preview = previewBuilder.build().also {
                     it.setSurfaceProvider(viewFinder.surfaceProvider)
                 }
 
@@ -214,13 +236,13 @@ class MainActivity : AppCompatActivity() {
                 var cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
                 if (isMacroLens) {
-                    val macroCameraId = getSecondaryCameraId()
-                    if (macroCameraId != null) {
+                    val physicalMacroId = getSecondaryPhysicalCameraId()
+                    if (physicalMacroId != null) {
                         cameraSelector = CameraSelector.Builder()
                             .addCameraFilter { cameraInfos ->
-                                cameraInfos.filter {
-                                    val id = (it as? androidx.camera.camera2.interop.Camera2CameraInfo)?.cameraId
-                                    id == macroCameraId
+                                cameraInfos.filter { info ->
+                                    val id = (info as? androidx.camera.camera2.interop.Camera2CameraInfo)?.cameraId
+                                    id == physicalMacroId
                                 }
                             }.build()
                     }
@@ -229,10 +251,14 @@ class MainActivity : AppCompatActivity() {
                 cameraProvider.unbindAll()
                 camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture)
 
+                if (isMacroLens) {
+                    Toast.makeText(this, "Macro Lens Active", Toast.LENGTH_SHORT).show()
+                }
+
                 setupZoomAndEV()
 
             } catch (exc: Exception) {
-                // Secondary macro binding error fallback
+                // Smooth fallback if physical macro fails
                 try {
                     val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
                     val targetRatio = if (is169Ratio) AspectRatio.RATIO_16_9 else AspectRatio.RATIO_4_3
@@ -242,33 +268,35 @@ class MainActivity : AppCompatActivity() {
                     cameraProvider.unbindAll()
                     camera = cameraProvider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageCapture)
                     
-                    camera?.cameraControl?.setLinearZoom(0.3f)
-                    Toast.makeText(this, "Macro Focus Enabled", Toast.LENGTH_SHORT).show()
+                    camera?.cameraControl?.setLinearZoom(0.35f)
+                    Toast.makeText(this, "Macro Software Zoom Active", Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
-                    Toast.makeText(this, "Camera Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun getSecondaryCameraId(): String? {
+    private fun getSecondaryPhysicalCameraId(): String? {
         val manager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
         return try {
             val cameraIds = manager.cameraIdList
-            var primaryBackId: String? = null
-            
+            val backCameras = mutableListOf<String>()
+
             for (id in cameraIds) {
                 val characteristics = manager.getCameraCharacteristics(id)
                 val facing = characteristics.get(CameraCharacteristics.LENS_FACING)
                 if (facing == CameraCharacteristics.LENS_FACING_BACK) {
-                    if (primaryBackId == null) {
-                        primaryBackId = id
-                    } else {
-                        return id
-                    }
+                    backCameras.add(id)
                 }
             }
-            null
+
+            // Return second or third physical back camera ID
+            if (backCameras.size > 1) {
+                backCameras[1] 
+            } else {
+                null
+            }
         } catch (e: Exception) {
             null
         }
