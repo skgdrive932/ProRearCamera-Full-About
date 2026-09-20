@@ -2,263 +2,177 @@
 <androidx.constraintlayout.widget.ConstraintLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000"
-    tools:context=".MainActivity">
+    android:background="#000000">
 
-    <!-- Camera Preview Viewfinder -->
+    <!-- Camera Preview -->
     <androidx.camera.view.PreviewView
         android:id="@+id/viewFinder"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/modeSelectionBar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
-    <!-- 3x3 Grid Overlay -->
-    <TableLayout
-        android:id="@+id/gridOverlay"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/modeSelectionBar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-        <TableRow android:layout_weight="1">
-            <View android:layout_weight="1" android:background="#22FFFFFF" android:layout_margin="0.5dp"/>
-            <View android:layout_weight="1" android:background="#22FFFFFF" android:layout_margin="0.5dp"/>
-            <View android:layout_weight="1" android:background="#22FFFFFF" android:layout_margin="0.5dp"/>
-        </TableRow>
-        <TableRow android:layout_weight="1">
-            <View android:layout_weight="1" android:background="#22FFFFFF" android:layout_margin="0.5dp"/>
-            <View android:layout_weight="1" android:background="#22FFFFFF" android:layout_margin="0.5dp"/>
-            <View android:layout_weight="1" android:background="#22FFFFFF" android:layout_margin="0.5dp"/>
-        </TableRow>
-        <TableRow android:layout_weight="1">
-            <View android:layout_weight="1" android:background="#22FFFFFF" android:layout_margin="0.5dp"/>
-            <View android:layout_weight="1" android:background="#22FFFFFF" android:layout_margin="0.5dp"/>
-            <View android:layout_weight="1" android:background="#22FFFFFF" android:layout_margin="0.5dp"/>
-        </TableRow>
-    </TableLayout>
-
-    <!-- Top Action Bar Pills -->
+    <!-- Top Bar Controls (Flash, HDR, Timer, Settings) -->
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
-        android:paddingHorizontal="16dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="24dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:background="#40000000"
+        android:paddingHorizontal="16dp"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
+        <ImageView
+            android:id="@+id/btnSettings"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_weight="1"
+            android:src="@android:drawable/ic_menu_manage"
+            app:tint="#FFFFFF" />
+
+        <ImageView
             android:id="@+id/btnFlash"
-            android:layout_width="wrap_content"
+            android:layout_width="32dp"
             android:layout_height="32dp"
-            android:background="@drawable/bg_pill"
-            android:gravity="center"
-            android:paddingHorizontal="12dp"
-            android:text="⚡ OFF"
-            android:textColor="#FFFFFF"
-            android:textSize="11sp"
-            android:textStyle="bold" />
+            android:layout_weight="1"
+            android:src="@android:drawable/ic_menu_compass"
+            app:tint="#FFFFFF" />
 
-        <TextView
-            android:id="@+id/btnGrid"
-            android:layout_width="wrap_content"
+        <ImageView
+            android:id="@+id/btnHdr"
+            android:layout_width="32dp"
             android:layout_height="32dp"
-            android:layout_marginStart="8dp"
-            android:background="@drawable/bg_pill"
-            android:gravity="center"
-            android:paddingHorizontal="12dp"
-            android:text="GRID"
-            android:textColor="#FFFFFF"
-            android:textSize="11sp"
-            android:textStyle="bold" />
+            android:layout_weight="1"
+            android:src="@android:drawable/ic_menu_info_details"
+            app:tint="#FFFFFF" />
 
-        <TextView
-            android:id="@+id/btnAspectRatio"
-            android:layout_width="wrap_content"
+        <ImageView
+            android:id="@+id/btnTimer"
+            android:layout_width="32dp"
             android:layout_height="32dp"
-            android:layout_marginStart="8dp"
-            android:background="@drawable/bg_pill"
-            android:gravity="center"
-            android:paddingHorizontal="12dp"
-            android:text="4:3"
-            android:textColor="#FFFFFF"
-            android:textSize="11sp"
-            android:textStyle="bold" />
-
-        <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
-
-        <TextView
-            android:id="@+id/aboutButton"
-            android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:background="@drawable/bg_pill"
-            android:gravity="center"
-            android:paddingHorizontal="12dp"
-            android:text="ⓘ ABOUT"
-            android:textColor="#FFFFFF"
-            android:textSize="11sp"
-            android:textStyle="bold" />
+            android:layout_weight="1"
+            android:src="@android:drawable/ic_menu_recent_history"
+            app:tint="#FFFFFF" />
     </LinearLayout>
 
-    <!-- Floating Pro Sliders Card -->
+    <!-- Zoom Control Pills (0.6x, 1x, 2x) -->
     <LinearLayout
-        android:id="@+id/proSlidersCard"
+        android:id="@+id/zoomLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:background="#80000000"
+        android:orientation="vertical"
+        android:padding="4dp"
+        app:layout_constraintBottom_toTopOf="@+id/modeSelector"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/topBar">
+
+        <TextView
+            android:id="@+id/zoom2x"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:gravity="center"
+            android:text="2x"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/zoom1x"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="#40FFFFFF"
+            android:gravity="center"
+            android:text="1x"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/zoom06x"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:gravity="center"
+            android:text="0.6x"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Mode Selector (Night, Portrait, Photo, Video) -->
+    <LinearLayout
+        android:id="@+id/modeSelector"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="20dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/bg_pill"
-        android:orientation="vertical"
-        android:padding="12dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/modeSelectionBar">
-
-        <!-- Exposure Compensation EV -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="48dp"
-                android:layout_height="wrap_content"
-                android:text="EV"
-                android:textColor="#FFD700"
-                android:textSize="11sp"
-                android:textStyle="bold" />
-
-            <SeekBar
-                android:id="@+id/evSlider"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:max="20"
-                android:progress="10"
-                android:progressTint="#FFD700"
-                android:thumbTint="#FFD700" />
-        </LinearLayout>
-
-        <!-- Live Zoom Bar & Text Level -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/txtZoomLevel"
-                android:layout_width="48dp"
-                android:layout_height="wrap_content"
-                android:text="1.0x"
-                android:textColor="#FFFFFF"
-                android:textSize="11sp"
-                android:textStyle="bold" />
-
-            <SeekBar
-                android:id="@+id/zoomSlider"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:max="100"
-                android:progressTint="#FFFFFF"
-                android:thumbTint="#FFFFFF" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- Camera Mode Switcher -->
-    <LinearLayout
-        android:id="@+id/modeSelectionBar"
-        android:layout_width="match_parent"
-        android:layout_height="36dp"
+        android:layout_marginBottom="16dp"
         android:gravity="center"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/bottomControlPanel">
+        app:layout_constraintBottom_toTopOf="@+id/bottomBar">
 
         <TextView
-            android:id="@+id/modePhoto"
+            android:id="@+id/modeNight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="12dp"
-            android:text="PHOTO"
-            android:textColor="#FFD700"
-            android:textSize="13sp"
-            android:textStyle="bold" />
+            android:paddingHorizontal="12dp"
+            android:text="Night"
+            android:textColor="#B0B0B0"
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/modePortrait"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="12dp"
-            android:text="PORTRAIT"
-            android:textColor="#88FFFFFF"
-            android:textSize="13sp"
+            android:paddingHorizontal="12dp"
+            android:text="Portrait"
+            android:textColor="#B0B0B0"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/modePhoto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="12dp"
+            android:text="Photo"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/modeMacro"
+            android:id="@+id/modeVideo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="12dp"
-            android:text="MACRO"
-            android:textColor="#88FFFFFF"
-            android:textSize="13sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/modePro"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="12dp"
-            android:text="PRO"
-            android:textColor="#88FFFFFF"
-            android:textSize="13sp"
-            android:textStyle="bold" />
+            android:paddingHorizontal="12dp"
+            android:text="Video"
+            android:textColor="#B0B0B0"
+            android:textSize="14sp" />
     </LinearLayout>
 
-    <!-- Bottom Action Panel -->
+    <!-- Bottom Bar (Gallery Preview, Shutter Button - NO SWITCH CAMERA BUTTON) -->
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/bottomControlPanel"
+        android:id="@+id/bottomBar"
         android:layout_width="match_parent"
-        android:layout_height="110dp"
-        android:background="#FF000000"
+        android:layout_height="100dp"
+        android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <!-- Gallery Preview -->
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/imgPreview"
+        <!-- Gallery Thumbnail Preview -->
+        <ImageView
+            android:id="@+id/btnGallery"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_marginStart="36dp"
-            android:background="#222222"
-            android:contentDescription="Gallery Preview"
+            android:layout_marginStart="48dp"
+            android:background="@drawable/rounded_corner_bg"
             android:scaleType="centerCrop"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
-            app:strokeColor="#FFFFFF"
-            app:strokeWidth="2dp" />
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Double Ring Shutter -->
-        <ImageButton
+        <!-- Shutter / Capture Button -->
+        <Button
             android:id="@+id/btnCapture"
             android:layout_width="72dp"
             android:layout_height="72dp"
-            android:background="@drawable/bg_shutter"
-            android:contentDescription="Capture"
+            android:background="@drawable/shutter_button_bg"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
