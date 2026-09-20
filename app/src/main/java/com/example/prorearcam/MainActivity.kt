@@ -232,7 +232,7 @@ class MainActivity : AppCompatActivity() {
                 setupZoomAndEV()
 
             } catch (exc: Exception) {
-                // If secondary macro binding fails, fallback smoothly to primary back camera
+                // Secondary macro binding error fallback
                 try {
                     val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
                     val targetRatio = if (is169Ratio) AspectRatio.RATIO_16_9 else AspectRatio.RATIO_4_3
@@ -242,7 +242,6 @@ class MainActivity : AppCompatActivity() {
                     cameraProvider.unbindAll()
                     camera = cameraProvider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageCapture)
                     
-                    // Apply close focus distance if hardware fallback occurs
                     camera?.cameraControl?.setLinearZoom(0.3f)
                     Toast.makeText(this, "Macro Focus Enabled", Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
@@ -252,7 +251,6 @@ class MainActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    // Safely detects hardware secondary physical camera ID using CameraManager
     private fun getSecondaryCameraId(): String? {
         val manager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
         return try {
@@ -266,7 +264,6 @@ class MainActivity : AppCompatActivity() {
                     if (primaryBackId == null) {
                         primaryBackId = id
                     } else {
-                        // Return physical secondary back lens ID (Macro/Depth)
                         return id
                     }
                 }
@@ -291,7 +288,6 @@ class MainActivity : AppCompatActivity() {
         })
 
         evSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Progress: Int, fromUser: Boolean) {}
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 val evRange = camera?.cameraInfo?.exposureState?.exposureCompensationRange
                 if (evRange != null && evRange.contains(progress - 10)) {
