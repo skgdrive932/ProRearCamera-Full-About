@@ -1,1 +1,18 @@
-a
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Basic System Colors -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Camera Theme Colors -->
+    <color name="camera_bg_dark">#000000</color>
+    <color name="camera_bottom_panel">#3A0D05</color>
+    <color name="camera_preview_bg">#7A2D16</color>
+    
+    <!-- UI Elements & Text Colors -->
+    <color name="shutter_button">#FFFFFF</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#CCCCCC</color>
+    <color name="overlay_bg">#33000000</color>
+    <color name="button_ripple_bg">#22FFFFFF</color>
+</resources>
