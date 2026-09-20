@@ -43,13 +43,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var gridOverlay: TableLayout
     private lateinit var proSlidersCard: LinearLayout
 
-    // Top Bar TextView Pills
     private lateinit var btnFlash: TextView
     private lateinit var btnGrid: TextView
     private lateinit var btnAspectRatio: TextView
     private lateinit var aboutButton: TextView
 
-    // Mode Buttons
     private lateinit var modePhoto: TextView
     private lateinit var modePortrait: TextView
     private lateinit var modeMacro: TextView
@@ -66,7 +64,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // UI Binding
+        // View Binding
         viewFinder = findViewById(R.id.viewFinder)
         imgPreview = findViewById(R.id.imgPreview)
         btnCapture = findViewById(R.id.btnCapture)
@@ -86,15 +84,13 @@ class MainActivity : AppCompatActivity() {
         modeMacro = findViewById(R.id.modeMacro)
         modePro = findViewById(R.id.modePro)
 
-        // Navigation
         aboutButton.setOnClickListener {
             startActivity(Intent(this, AboutActivity::class.java))
         }
 
-        // Shutter Button
         btnCapture.setOnClickListener { takePhoto() }
 
-        // Open Full Captured Photo Preview
+        // Tap on circular photo thumbnail to open Gallery preview
         imgPreview.setOnClickListener {
             lastSavedUri?.let { uri ->
                 val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -109,7 +105,7 @@ class MainActivity : AppCompatActivity() {
         setupModeSwitchers()
 
         if (allPermissionsGranted()) {
-            startCamera()
+            startCamera(isMacroLens = false)
         } else {
             ActivityCompat.requestPermissions(
                 this, arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_CODE
@@ -143,9 +139,10 @@ class MainActivity : AppCompatActivity() {
         btnAspectRatio.setOnClickListener {
             is169Ratio = !is169Ratio
             btnAspectRatio.text = if (is169Ratio) "16:9" else "4:3"
-            startCamera()
+            startCamera(isMacroLens = false)
         }
 
+        // Tap-to-focus
         viewFinder.setOnTouchListener { _, event ->
             val factory = viewFinder.meteringPointFactory
             val point = factory.createPoint(event.x, event.y)
@@ -167,16 +164,23 @@ class MainActivity : AppCompatActivity() {
             selected.alpha = 1.0f
 
             when (selected.id) {
-                R.id.modePro -> proSlidersCard.visibility = View.VISIBLE
+                R.id.modePro -> {
+                    proSlidersCard.visibility = View.VISIBLE
+                    startCamera(isMacroLens = false)
+                }
                 R.id.modeMacro -> {
                     proSlidersCard.visibility = View.GONE
-                    camera?.cameraControl?.setLinearZoom(0.8f) // High Zoom for Macro
+                    // Physical Macro Lens call
+                    startCamera(isMacroLens = true)
                 }
                 R.id.modePortrait -> {
                     proSlidersCard.visibility = View.GONE
-                    camera?.cameraControl?.setLinearZoom(0.2f) // Center Focus Mode
+                    startCamera(isMacroLens = false)
                 }
-                else -> proSlidersCard.visibility = View.GONE
+                else -> {
+                    proSlidersCard.visibility = View.GONE
+                    startCamera(isMacroLens = false)
+                }
             }
         }
 
@@ -184,11 +188,9 @@ class MainActivity : AppCompatActivity() {
         modePortrait.setOnClickListener { selectMode(modePortrait) }
         modeMacro.setOnClickListener { selectMode(modeMacro) }
         modePro.setOnClickListener { selectMode(modePro) }
-        
-        selectMode(modePhoto) // Default
     }
 
-    private fun startCamera() {
+    private fun startCamera(isMacroLens: Boolean = false) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener({
@@ -206,7 +208,31 @@ class MainActivity : AppCompatActivity() {
                     .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                     .build()
 
-                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+                val availableCameras = cameraProvider.availableCameraInfos.filter {
+                    it.lensFacing == CameraSelector.LENS_FACING_BACK
+                }
+
+                var cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+                // Hardware Micro Lens Selection Logic
+                if (isMacroLens && availableCameras.size > 1) {
+                    val macroSelector = CameraSelector.Builder()
+                        .addCameraFilter { cameraInfos ->
+                            cameraInfos.filter { info ->
+                                info != cameraProvider.availableCameraInfos.firstOrNull { 
+                                    it.lensFacing == CameraSelector.LENS_FACING_BACK 
+                                }
+                            }
+                        }.build()
+
+                    try {
+                        if (cameraProvider.hasCamera(macroSelector)) {
+                            cameraSelector = macroSelector
+                        }
+                    } catch (e: Exception) {
+                        cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+                    }
+                }
 
                 cameraProvider.unbindAll()
                 camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture)
@@ -214,7 +240,7 @@ class MainActivity : AppCompatActivity() {
                 setupZoomAndEV()
 
             } catch (exc: Exception) {
-                Toast.makeText(this, "Camera load error: ${exc.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Camera load fail: ${exc.message}", Toast.LENGTH_SHORT).show()
             }
         }, ContextCompat.getMainExecutor(this))
     }
@@ -225,7 +251,7 @@ class MainActivity : AppCompatActivity() {
                 val linearZoom = progress / 100f
                 camera?.cameraControl?.setLinearZoom(linearZoom)
 
-                // Zoom level text formatting (e.g., 1.0x - 8.0x)
+                // Dynamic Zoom Display Range (1.0x se 8.0x)
                 val zoomRatio = 1.0f + (linearZoom * 7.0f)
                 txtZoomLevel.text = String.format(Locale.US, "%.1fx", zoomRatio)
             }
@@ -268,7 +294,7 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    Toast.makeText(baseContext, "Photo Saved!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(baseContext, "Photo saved!", Toast.LENGTH_SHORT).show()
                     
                     lastSavedUri = outputFileResults.savedUri
                     lastSavedUri?.let { uri ->
@@ -298,7 +324,7 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == CAMERA_PERMISSION_CODE) {
             if (allPermissionsGranted()) {
-                startCamera()
+                startCamera(isMacroLens = false)
             } else {
                 Toast.makeText(this, "Camera permission needed", Toast.LENGTH_SHORT).show()
             }
