@@ -8,23 +8,23 @@
     android:background="#000000"
     tools:context=".MainActivity">
 
-    <!-- Camera Preview -->
+    <!-- Camera Preview Viewfinder -->
     <androidx.camera.view.PreviewView
         android:id="@+id/viewFinder"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/bottomControlPanel"
+        app:layout_constraintBottom_toTopOf="@+id/modeSelectionBar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Grid Overlay -->
+    <!-- 3x3 Grid Overlay -->
     <TableLayout
         android:id="@+id/gridOverlay"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/bottomControlPanel"
+        app:layout_constraintBottom_toTopOf="@+id/modeSelectionBar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -45,7 +45,7 @@
         </TableRow>
     </TableLayout>
 
-    <!-- Top Action Bar -->
+    <!-- Top Action Bar Pills -->
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
@@ -111,7 +111,7 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Pro Sliders Box -->
+    <!-- Floating Pro Sliders Card -->
     <LinearLayout
         android:id="@+id/proSlidersCard"
         android:layout_width="match_parent"
@@ -121,9 +121,10 @@
         android:background="@drawable/bg_pill"
         android:orientation="vertical"
         android:padding="12dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/modeSelectionBar">
 
-        <!-- EV Slider -->
+        <!-- Exposure Compensation EV -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -149,7 +150,7 @@
                 android:thumbTint="#FFD700" />
         </LinearLayout>
 
-        <!-- Zoom Slider & Percentage Indicator -->
+        <!-- Live Zoom Bar & Text Level -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -177,7 +178,7 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Camera Modes Switcher Bar -->
+    <!-- Camera Mode Switcher -->
     <LinearLayout
         android:id="@+id/modeSelectionBar"
         android:layout_width="match_parent"
@@ -227,7 +228,7 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Bottom Control Panel -->
+    <!-- Bottom Action Panel -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/bottomControlPanel"
         android:layout_width="match_parent"
@@ -235,7 +236,7 @@
         android:background="#FF000000"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <!-- Circular Gallery Thumbnail Preview -->
+        <!-- Gallery Preview -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imgPreview"
             android:layout_width="50dp"
@@ -251,7 +252,7 @@
             app:strokeColor="#FFFFFF"
             app:strokeWidth="2dp" />
 
-        <!-- Double Ring Shutter Button -->
+        <!-- Double Ring Shutter -->
         <ImageButton
             android:id="@+id/btnCapture"
             android:layout_width="72dp"
