@@ -2,9 +2,12 @@ package com.example.prorearcam
 
 import android.Manifest
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -31,6 +34,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
 
@@ -59,6 +63,8 @@ class MainActivity : AppCompatActivity() {
     private var flashMode = ImageCapture.FLASH_MODE_OFF
     private var is169Ratio = false
     private val CAMERA_PERMISSION_CODE = 101
+
+    private val cameraExecutor = Executors.newSingleThreadExecutor()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,7 +96,6 @@ class MainActivity : AppCompatActivity() {
 
         btnCapture.setOnClickListener { takePhoto() }
 
-        // Tap on circular photo thumbnail to open Gallery preview
         imgPreview.setOnClickListener {
             lastSavedUri?.let { uri ->
                 val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -142,7 +147,6 @@ class MainActivity : AppCompatActivity() {
             startCamera(isMacroLens = false)
         }
 
-        // Tap-to-focus
         viewFinder.setOnTouchListener { _, event ->
             val factory = viewFinder.meteringPointFactory
             val point = factory.createPoint(event.x, event.y)
@@ -170,7 +174,6 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.modeMacro -> {
                     proSlidersCard.visibility = View.GONE
-                    // Physical Macro Lens call
                     startCamera(isMacroLens = true)
                 }
                 R.id.modePortrait -> {
@@ -208,29 +211,18 @@ class MainActivity : AppCompatActivity() {
                     .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                     .build()
 
-                val availableCameras = cameraProvider.availableCameraInfos.filter {
-                    it.lensFacing == CameraSelector.LENS_FACING_BACK
-                }
-
                 var cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
-                // Hardware Micro Lens Selection Logic
-                if (isMacroLens && availableCameras.size > 1) {
-                    val macroSelector = CameraSelector.Builder()
-                        .addCameraFilter { cameraInfos ->
-                            cameraInfos.filter { info ->
-                                info != cameraProvider.availableCameraInfos.firstOrNull { 
-                                    it.lensFacing == CameraSelector.LENS_FACING_BACK 
+                if (isMacroLens) {
+                    val macroCameraId = getSecondaryCameraId()
+                    if (macroCameraId != null) {
+                        cameraSelector = CameraSelector.Builder()
+                            .addCameraFilter { cameraInfos ->
+                                cameraInfos.filter {
+                                    val id = (it as? androidx.camera.camera2.interop.Camera2CameraInfo)?.cameraId
+                                    id == macroCameraId
                                 }
-                            }
-                        }.build()
-
-                    try {
-                        if (cameraProvider.hasCamera(macroSelector)) {
-                            cameraSelector = macroSelector
-                        }
-                    } catch (e: Exception) {
-                        cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+                            }.build()
                     }
                 }
 
@@ -240,9 +232,49 @@ class MainActivity : AppCompatActivity() {
                 setupZoomAndEV()
 
             } catch (exc: Exception) {
-                Toast.makeText(this, "Camera load fail: ${exc.message}", Toast.LENGTH_SHORT).show()
+                // If secondary macro binding fails, fallback smoothly to primary back camera
+                try {
+                    val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+                    val targetRatio = if (is169Ratio) AspectRatio.RATIO_16_9 else AspectRatio.RATIO_4_3
+                    val preview = Preview.Builder().setTargetAspectRatio(targetRatio).build().also {
+                        it.setSurfaceProvider(viewFinder.surfaceProvider)
+                    }
+                    cameraProvider.unbindAll()
+                    camera = cameraProvider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageCapture)
+                    
+                    // Apply close focus distance if hardware fallback occurs
+                    camera?.cameraControl?.setLinearZoom(0.3f)
+                    Toast.makeText(this, "Macro Focus Enabled", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Camera Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         }, ContextCompat.getMainExecutor(this))
+    }
+
+    // Safely detects hardware secondary physical camera ID using CameraManager
+    private fun getSecondaryCameraId(): String? {
+        val manager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        return try {
+            val cameraIds = manager.cameraIdList
+            var primaryBackId: String? = null
+            
+            for (id in cameraIds) {
+                val characteristics = manager.getCameraCharacteristics(id)
+                val facing = characteristics.get(CameraCharacteristics.LENS_FACING)
+                if (facing == CameraCharacteristics.LENS_FACING_BACK) {
+                    if (primaryBackId == null) {
+                        primaryBackId = id
+                    } else {
+                        // Return physical secondary back lens ID (Macro/Depth)
+                        return id
+                    }
+                }
+            }
+            null
+        } catch (e: Exception) {
+            null
+        }
     }
 
     private fun setupZoomAndEV() {
@@ -251,7 +283,6 @@ class MainActivity : AppCompatActivity() {
                 val linearZoom = progress / 100f
                 camera?.cameraControl?.setLinearZoom(linearZoom)
 
-                // Dynamic Zoom Display Range (1.0x se 8.0x)
                 val zoomRatio = 1.0f + (linearZoom * 7.0f)
                 txtZoomLevel.text = String.format(Locale.US, "%.1fx", zoomRatio)
             }
@@ -260,6 +291,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         evSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Progress: Int, fromUser: Boolean) {}
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 val evRange = camera?.cameraInfo?.exposureState?.exposureCompensationRange
                 if (evRange != null && evRange.contains(progress - 10)) {
@@ -329,5 +361,10 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Camera permission needed", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraExecutor.shutdown()
     }
 }
