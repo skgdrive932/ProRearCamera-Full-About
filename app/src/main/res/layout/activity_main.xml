@@ -45,7 +45,7 @@
         </TableRow>
     </TableLayout>
 
-    <!-- Top Bar (Clean & Spaced Buttons) -->
+    <!-- Top Action Bar -->
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
@@ -96,10 +96,7 @@
             android:textSize="11sp"
             android:textStyle="bold" />
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+        <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
 
         <TextView
             android:id="@+id/aboutButton"
@@ -114,16 +111,17 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Pro Sliders Box (Floating Glassmorphism Card) -->
+    <!-- Pro Sliders Box -->
     <LinearLayout
+        android:id="@+id/proSlidersCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="20dp"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/bg_pill"
         android:orientation="vertical"
         android:padding="12dp"
-        app:layout_constraintBottom_toTopOf="@+id/bottomControlPanel">
+        app:layout_constraintBottom_toTopOf="@+id/modeSelectionBar">
 
         <!-- EV Slider -->
         <LinearLayout
@@ -151,7 +149,7 @@
                 android:thumbTint="#FFD700" />
         </LinearLayout>
 
-        <!-- Zoom Slider -->
+        <!-- Zoom Slider & Percentage Indicator -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -160,9 +158,10 @@
             android:orientation="horizontal">
 
             <TextView
+                android:id="@+id/txtZoomLevel"
                 android:layout_width="48dp"
                 android:layout_height="wrap_content"
-                android:text="ZOOM"
+                android:text="1.0x"
                 android:textColor="#FFFFFF"
                 android:textSize="11sp"
                 android:textStyle="bold" />
@@ -176,6 +175,56 @@
                 android:progressTint="#FFFFFF"
                 android:thumbTint="#FFFFFF" />
         </LinearLayout>
+    </LinearLayout>
+
+    <!-- Camera Modes Switcher Bar -->
+    <LinearLayout
+        android:id="@+id/modeSelectionBar"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/bottomControlPanel">
+
+        <TextView
+            android:id="@+id/modePhoto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="12dp"
+            android:text="PHOTO"
+            android:textColor="#FFD700"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/modePortrait"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="12dp"
+            android:text="PORTRAIT"
+            android:textColor="#88FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/modeMacro"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="12dp"
+            android:text="MACRO"
+            android:textColor="#88FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/modePro"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="12dp"
+            android:text="PRO"
+            android:textColor="#88FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <!-- Bottom Control Panel -->
